@@ -6,8 +6,12 @@ const categorySchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    title2: {
-      type: String,
+    price: {
+      type: Number,
+      required: true,
+    },
+    kgs: {
+      type: Number,
       required: true,
     },
     icon: {

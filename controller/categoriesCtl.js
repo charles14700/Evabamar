@@ -5,21 +5,24 @@ const asyncHandler = require("express-async-handler");
 
 const postCategory = asyncHandler(async (req, res) => {
   // Get the category  from the request body
-  const { title, title2, icon, quantity, productId } = req.body;
+  const { title, kgs, icon, quantity, price, productId } = req.body;
   validateMongodbId(productId);
   // Find or create the category object
-  let category = await Category.findOne({ title });
+  let category = await Category.findOne({
+    kgs,
+    title,
+  });
   if (!category) {
     category = await Category.create({
       title,
-      title2,
+      kgs,
       icon,
       quantity,
+      price,
     });
   } else {
-    res.status(409).json({
-      message:
-        "category already exists but am pushing category to your product",
+    return res.status(409).json({
+      message: "category already exists",
     });
   }
 

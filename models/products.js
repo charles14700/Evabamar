@@ -18,12 +18,9 @@ var productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    richDescription: {
-      type: String,
-      required: true,
-    },
+
     price: {
-      type: Number,
+      type: String,
       required: true,
     },
     category: [
@@ -33,14 +30,6 @@ var productSchema = new mongoose.Schema(
         required: true,
       },
     ],
-    isFeatured: {
-      type: Boolean,
-      default: false,
-    },
-    isSpecial: {
-      type: Boolean,
-      default: false,
-    },
     brand: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -62,28 +51,9 @@ var productSchema = new mongoose.Schema(
     },
     images: [
       {
-        public_id: String,
         url: String,
       },
     ],
-    colors: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Color",
-      },
-    ],
-    tags: String,
-    ratings: [
-      {
-        star: Number,
-        comment: String,
-        postedby: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      },
-    ],
-    totalrating: {
-      type: String,
-      default: 0,
-    },
   },
   { timestamps: true }
 );
