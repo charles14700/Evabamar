@@ -1,22 +1,22 @@
 //add to cart
 const mongoose = require("mongoose");
-const Product = require("../models/products");
+const { Category } = require("../models/category");
 const UserCart = require("../models/userCartModel");
 
 //add to cart
 const addToCart = async (req, res) => {
   try {
-    const { productId, quantity, color } = req.body;
+    const { productId, quantity, kgs } = req.body;
     // Check if item already exists in cart
     const cartItem = await UserCart.findOne({
       userId: req.user.userId,
       "items.product": productId,
     }).lean();
-    console.log(color);
+    // console.log(kgs);
 
     if (cartItem) {
       // If item exists, update quantity
-      const product = await Product.findById(productId).lean();
+      const product = await Category.findById(productId).lean();
       if (!product) {
         return res.status(400).json({ message: "Product not found" });
       }
@@ -24,6 +24,7 @@ const addToCart = async (req, res) => {
       const requestedQuantity =
         cartItem.items.find((item) => item.product == productId).quantity +
         quantity;
+      // console.log(requestedQuantity + quantity);
 
       if (requestedQuantity > product.quantity) {
         return res
@@ -42,7 +43,8 @@ const addToCart = async (req, res) => {
       ).lean();
     } else {
       // If item does not exist, add new item to cart
-      const product = await Product.findById(productId).lean();
+      const product = await Category.findById(productId).lean();
+      console.log(product.quantity);
       if (!product) {
         return res.status(400).json({ message: "Product not found" });
       }
@@ -57,7 +59,7 @@ const addToCart = async (req, res) => {
         product: product._id,
         quantity: quantity,
         price: product.price,
-        color: color,
+        kgs: kgs,
       };
 
       await UserCart.findOneAndUpdate(
@@ -81,6 +83,8 @@ const getCartItems = async (req, res) => {
       .populate("items.product")
       .lean();
 
+    console.log(userCart);
+
     if (!userCart) {
       return res.status(404).json({ message: "User cart not found" });
     }
@@ -88,7 +92,7 @@ const getCartItems = async (req, res) => {
     const items = userCart.items;
     const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
     const totalPrice = items.reduce(
-      (acc, item) => acc + item.quantity * item.product.price,
+      (acc, item) => acc + item.quantity * item.price,
       0
     );
 
@@ -132,7 +136,7 @@ const updateCartItemQuantity = async (req, res) => {
     const objectIdString = updatedItem.product; // Assuming it contains the ObjectId value
     const objectId = String(objectIdString); // Ensure it's a string representation of ObjectId
 
-    const inStock = await Product.findById(objectId).select("quantity").lean();
+    const inStock = await Category.findById(objectId).select("quantity").lean();
     // console.log(inStock.quantity);
 
     if (quantity > inStock.quantity) {
