@@ -6,7 +6,7 @@ const UserCart = require("../models/userCartModel");
 //add to cart
 const addToCart = async (req, res) => {
   try {
-    const { productId, quantity, kgs } = req.body;
+    const { productId, quantity } = req.body;
     // Check if item already exists in cart
     const cartItem = await UserCart.findOne({
       userId: req.user.userId,
@@ -59,7 +59,6 @@ const addToCart = async (req, res) => {
         product: product._id,
         quantity: quantity,
         price: product.price,
-        kgs: kgs,
       };
 
       await UserCart.findOneAndUpdate(
