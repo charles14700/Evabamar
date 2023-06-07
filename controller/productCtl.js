@@ -3,7 +3,6 @@ const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const validateMongodbId = require("../utils/validateMongodbId");
 const FlashSaleProduct = require("../models/flashSaleModel");
-const { Category } = require("../models/category");
 
 const createProduct = asyncHandler(async (req, res) => {
   if (req.body.title) {
@@ -76,20 +75,19 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
   const product = await Product.findById(id);
   if (!product) {
-    res.status(404).json({ message: "Product not found" });
-    return;
+    return res.status(404).json({ message: "Product not found" });
   }
 
   const categoryIds = product.category;
-  await Category.deleteMany({ _id: { $in: categoryIds } });
+  if (categoryIds.length > 0) {
+    await Category.deleteMany({ _id: { $in: categoryIds } });
+  }
 
   await Product.findByIdAndRemove(id);
 
-  res
-    .status(200)
-    .json({
-      message: "Product and associated categories deleted successfully",
-    });
+  res.status(200).json({
+    message: "Product and associated categories deleted successfully",
+  });
 });
 
 const getaProduct = asyncHandler(async (req, res) => {
