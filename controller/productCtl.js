@@ -3,6 +3,7 @@ const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const validateMongodbId = require("../utils/validateMongodbId");
 const FlashSaleProduct = require("../models/flashSaleModel");
+const { Category } = require("../models/category");
 
 const createProduct = asyncHandler(async (req, res) => {
   if (req.body.title) {
@@ -77,7 +78,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
   if (!product) {
     return res.status(404).json({ message: "Product not found" });
   }
-
+  console.log(product);
   const categoryIds = product.category;
   if (categoryIds.length > 0) {
     await Category.deleteMany({ _id: { $in: categoryIds } });
