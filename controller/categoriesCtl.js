@@ -80,7 +80,9 @@ const deleteCategory = asyncHandler(async (req, res) => {
   const product = await Product.findOne({ category: categoryId });
 
   if (!product) {
-    return res.status(404).json({ message: "category not found" });
+    return res
+      .status(404)
+      .json({ message: "no product associated with this category" });
   }
 
   // Remove the categoryid from the category's array
