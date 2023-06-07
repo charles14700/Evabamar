@@ -2,7 +2,6 @@ const Product = require("../models/products");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 const validateMongodbId = require("../utils/validateMongodbId");
-const FlashSaleProduct = require("../models/flashSaleModel");
 const { Category } = require("../models/category");
 
 const createProduct = asyncHandler(async (req, res) => {
@@ -47,14 +46,56 @@ const getAllProduct = asyncHandler(async (req, res) => {
   // Return products
   const products = await query;
 
-  // Send response
-  res.status(200).json({
-    success: true,
-    data: products,
-    page,
-    limit,
-    totalProducts,
-  });
+  // Extract product IDs
+  const productIds = products.map((product) => product._id);
+
+  try {
+    const result = await Product.aggregate([
+      { $match: { _id: { $in: productIds } } },
+      { $unwind: "$category" },
+      {
+        $lookup: {
+          from: "categories",
+          localField: "category",
+          foreignField: "_id",
+          as: "categoryData",
+        },
+      },
+      { $unwind: "$categoryData" },
+      {
+        $group: {
+          _id: "$_id",
+          totalQuantity: { $sum: "$categoryData.quantity" },
+        },
+      },
+    ]);
+
+    console.log(result);
+
+    const totalQuantities = {};
+    result.forEach((item) => {
+      totalQuantities[item._id] = item.totalQuantity;
+    });
+
+    // Update the product models with the total quantities
+    await Promise.all(
+      Object.entries(totalQuantities).map(([productId, totalQuantity]) =>
+        Product.findByIdAndUpdate(productId, { quantity: totalQuantity })
+      )
+    );
+    // Send response
+    res.status(200).json({
+      success: true,
+      data: products,
+      page,
+      limit,
+      totalProducts,
+      // totalQuantities,
+    });
+  } catch (error) {
+    // Handle the error
+    console.log(error);
+  }
 });
 
 const updateProduct = asyncHandler(async (req, res) => {

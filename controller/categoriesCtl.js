@@ -4,14 +4,13 @@ const Product = require("../models/products");
 const asyncHandler = require("express-async-handler");
 
 const postCategory = asyncHandler(async (req, res) => {
-  // Get the category  from the request body
+  // Get the category from the request body
   const { title, kgs, icon, quantity, price, productId } = req.body;
   validateMongodbId(productId);
+
   // Find or create the category object
-  let category = await Category.findOne({
-    kgs,
-    title,
-  });
+  let category = await Category.findOne({ kgs, title });
+
   if (!category) {
     category = await Category.create({
       title,
@@ -22,21 +21,17 @@ const postCategory = asyncHandler(async (req, res) => {
     });
   } else {
     return res.status(409).json({
-      message: "category already exists",
+      message: "Category already exists",
     });
   }
 
-  // Update the product with the new category
+  // Update the product with the new category and increment the quantity by 1
   const product = await Product.findByIdAndUpdate(
     productId,
     {
-      $push: {
-        category: category._id,
-      },
+      $push: { category: category._id },
     },
-    {
-      new: true,
-    }
+    { new: true }
   );
 
   // If the product does not exist, return an error
@@ -44,9 +39,9 @@ const postCategory = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Product not found" });
   }
 
-  // Return a success message and the new category and availability
+  // Return a success message, the new category, and the updated availability
   res.status(201).json({
-    message: "category added to product",
+    message: "Category added to product",
     category,
   });
 });
